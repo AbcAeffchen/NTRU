@@ -1,5 +1,5 @@
 //
-// Created by AbcAeffchen on 11.07.2016.
+// Created by Alex Schickedanz on 11.07.2016.
 //
 
 #ifndef NTRU_NTRU_H
@@ -19,10 +19,10 @@ class NTRU
 {
 private:
 
-    unsigned long N, p, q, d_f, d_g, d;
+    const unsigned long N, p, q, e, d_f, d_g, d;
 
     ZZX P, f, g;
-    ZZ_pE f_p, f_q, F_p, F_q;
+    ZZ_pX f_p, f_q, F_p, F_q;
 
     mt19937_64 rgen;
 
@@ -30,23 +30,32 @@ private:
 
     ZZX getRandomPolynomial(long d1, long d2);
 
+    /**
+     * Shifts the coefficients into the interval [-q/2,q/2]
+     */
+    void shift_coeff(ZZX& P, ZZ q);
+
 public:
 
-    ZZ_pE h;
+    ZZ_pX h;
 
-    NTRU(unsigned long N, unsigned long p, unsigned long q, unsigned long d_f, unsigned long d_g, unsigned long d)
-            : N(N), p(p), q(q), d_f(d_f), d_g(d_g), d(d)
+    NTRU(unsigned long N, unsigned long p, unsigned long e, unsigned long d_f, unsigned long d_g, unsigned long d)
+            : N(N), p(p), q((unsigned)1 << e), e(e), d_f(d_f), d_g(d_g), d(d)
     {
         unsigned long long seed = std::chrono::system_clock::now().time_since_epoch().count();
         this->rgen = mt19937_64(seed);
 
-        SetCoeff(this->P, 0, -1);
-        SetCoeff(this->P, N - 1, 1);
+        SetCoeff(this->P,0,-1);
+        SetCoeff(this->P,N,1);
 
         this->generateKeys();
 
         return;
     }
+
+    ZZ_pX encrypt(ZZX m);
+
+    ZZX decrypt(ZZ_pX e);
 
 };
 
